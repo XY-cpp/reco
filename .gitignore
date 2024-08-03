@@ -2,4 +2,7 @@
 *.iml
 *.xml
 dataset/
+logging/
+model_weights/
+results/
 __pycache__/
