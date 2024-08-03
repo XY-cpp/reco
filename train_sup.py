@@ -47,7 +47,6 @@ elif args.backbone == 'deeplabv2':
 total_epoch = 200
 optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, momentum=0.9, nesterov=True)
 scheduler = PolyLR(optimizer, total_epoch, power=0.9)
-create_folder(args.save_dir)
 
 train_epoch = len(train_l_loader)
 test_epoch = len(test_loader)

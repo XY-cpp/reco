@@ -69,6 +69,7 @@ ax[3].imshow(reco_blend)
 ax[3].set_xticklabels([])
 ax[3].set_yticklabels([])
 ax[3].set_xlabel('ClassMix + ReCo')
+plt.savefig("results/cityscapes.jpg",dpi=600)
 
 
 # ++++++++++++++++++++ Pascal VOC Visualisation +++++++++++++++++++++++++
@@ -134,5 +135,6 @@ ax[3].imshow(reco_blend)
 ax[3].set_xticklabels([])
 ax[3].set_yticklabels([])
 ax[3].set_xlabel('ClassMix + ReCo')
+plt.savefig("results/pascal.jpg",dpi=600)
 
 

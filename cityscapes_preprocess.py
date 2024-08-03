@@ -6,6 +6,10 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+
+# import sys
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from module_list import *
 
 root = 'dataset'
