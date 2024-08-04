@@ -59,7 +59,7 @@ for index in range(total_epoch):
     model.train()
     conf_mat = ConfMatrix(data_loader.num_segments)
     for i in range(train_epoch):
-        train_data, train_label = train_l_dataset.next()
+        train_data, train_label = next(train_l_dataset)
         train_data, train_label = train_data.to(device), train_label.to(device)
 
         optimizer.zero_grad()
@@ -95,7 +95,7 @@ for index in range(total_epoch):
         test_dataset = iter(test_loader)
         conf_mat = ConfMatrix(data_loader.num_segments)
         for i in range(test_epoch):
-            test_data, test_label = test_dataset.next()
+            test_data, test_label = next(test_dataset)
             test_data, test_label = test_data.to(device), test_label.to(device)
 
             pred, _ = model(test_data)

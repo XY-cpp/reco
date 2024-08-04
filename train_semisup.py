@@ -65,10 +65,10 @@ for index in range(total_epoch):
     l_conf_mat = ConfMatrix(data_loader.num_segments)
     u_conf_mat = ConfMatrix(data_loader.num_segments)
     for i in range(train_epoch):
-        train_l_data, train_l_label = train_l_dataset.next()
+        train_l_data, train_l_label = next(train_l_dataset)
         train_l_data, train_l_label = train_l_data.to(device), train_l_label.to(device)
 
-        train_u_data, train_u_label = train_u_dataset.next()
+        train_u_data, train_u_label = next(train_u_dataset)
         train_u_data, train_u_label = train_u_data.to(device), train_u_label.to(device)
 
         optimizer.zero_grad()
@@ -151,7 +151,7 @@ for index in range(total_epoch):
         test_dataset = iter(test_loader)
         conf_mat = ConfMatrix(data_loader.num_segments)
         for i in range(test_epoch):
-            test_data, test_label = test_dataset.next()
+            test_data, test_label = next(test_dataset)
             test_data, test_label = test_data.to(device), test_label.to(device)
 
             pred, rep = ema.model(test_data)
