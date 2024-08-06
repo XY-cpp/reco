@@ -151,12 +151,12 @@ def get_sick_idx(root, train=True, label_num=5):
     else:
         file_list = glob.glob(root + "/images/val/*.jpg")
     idx_list = [int(file[file.rfind("/") + 1 : file.rfind(".")]) for file in file_list]
+    idx_list.sort()
     if train:
         if label_num > len(idx_list):
             return idx_list, []
         else:
-            labeled_idx = random.sample(idx_list, label_num)
-            return labeled_idx, [idx for idx in idx_list if idx not in labeled_idx]
+            return idx_list[:label_num], idx_list[label_num:]
     else:
         return idx_list
 
@@ -391,7 +391,6 @@ class BuildDataLoader:
             self.batch_size = 2
             self.train_l_idx, self.train_u_idx = get_sick_idx(self.data_path, train=True, label_num=num_labels)
             self.test_idx = get_sick_idx(self.data_path, train=False)
-
 
         if dataset == 'pascal':
             self.data_path = 'dataset/pascal'
