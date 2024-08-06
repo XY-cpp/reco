@@ -128,6 +128,13 @@ def cityscapes_class_map(mask):
     mask_map[np.isin(mask, [33])] = 18
     return mask_map
 
+def sick_class_map(mask):
+    mask_map = np.zeros_like(mask)
+    mask_map[np.isin(mask, [0])] = 255
+    mask_map[np.isin(mask, [1])] = 0
+    mask_map[np.isin(mask, [2])] = 1
+    return mask_map
+
 
 def sun_class_map(mask):
     # -1 is equivalent to 255 in uint8
@@ -137,6 +144,23 @@ def sun_class_map(mask):
 # --------------------------------------------------------------------------------
 # Define indices for labelled, unlabelled training images, and test images
 # --------------------------------------------------------------------------------
+def get_sick_idx(root, train=True, label_num=5):
+    root = os.path.expanduser(root)
+    if train:
+        file_list = glob.glob(root + "/images/train/*.jpg")
+    else:
+        file_list = glob.glob(root + "/images/val/*.jpg")
+    idx_list = [int(file[file.rfind("/") + 1 : file.rfind(".")]) for file in file_list]
+    if train:
+        if label_num > len(idx_list):
+            return idx_list, []
+        else:
+            labeled_idx = random.sample(idx_list, label_num)
+            return labeled_idx, [idx for idx in idx_list if idx not in labeled_idx]
+    else:
+        return idx_list
+
+
 def get_pascal_idx(root, train=True, label_num=5):
     root = os.path.expanduser(root)
     if train:
@@ -296,6 +320,21 @@ class BuildDataset(Dataset):
         self.partial_seed = partial_seed
 
     def __getitem__(self, index):
+        if self.dataset == 'sick':
+            if self.train:
+                image_root = Image.open(self.root + '/images/train/{}.jpg'.format(self.idx_list[index]))
+                if self.apply_partial is None:
+                    label_root = Image.open(self.root + '/labels/train/{}.png'.format(self.idx_list[index]))
+                else:
+                    label_root = Image.open(self.root + '/labels/train_{}_{}/{}.png'.format(self.apply_partial,  self.partial_seed, self.idx_list[index]))
+                label_root = Image.fromarray(sick_class_map(np.array(label_root)))
+            else:
+                image_root = Image.open(self.root + '/images/val/{}.jpg'.format(self.idx_list[index]))
+                label_root = Image.open(self.root + '/labels/val/{}.png'.format(self.idx_list[index]))
+                label_root = Image.fromarray(sick_class_map(np.array(label_root)))
+            image, label = transform(image_root, label_root, None, self.crop_size, self.scale_size, self.augmentation)
+            return image, label.squeeze(0)
+
         if self.dataset == 'pascal':
             image_root = Image.open(self.root + '/JPEGImages/{}.jpg'.format(self.idx_list[index]))
             if self.apply_partial is None:
@@ -343,6 +382,17 @@ class BuildDataset(Dataset):
 class BuildDataLoader:
     def __init__(self, dataset, num_labels):
         self.dataset = dataset
+        if dataset == 'sick':
+            self.data_path = 'dataset/sick'
+            self.im_size = [512, 1024]
+            self.crop_size = [512, 512]
+            self.num_segments = 2
+            self.scale_size = (1.0, 1.0)
+            self.batch_size = 2
+            self.train_l_idx, self.train_u_idx = get_sick_idx(self.data_path, train=True, label_num=num_labels)
+            self.test_idx = get_sick_idx(self.data_path, train=False)
+
+
         if dataset == 'pascal':
             self.data_path = 'dataset/pascal'
             self.im_size = [513, 513]
@@ -361,6 +411,7 @@ class BuildDataLoader:
             self.scale_size = (1.0, 1.0)
             self.batch_size = 2
             self.train_l_idx, self.train_u_idx = get_cityscapes_idx(self.data_path, train=True, label_num=num_labels)
+            print(len(self.train_l_idx),len(self.train_u_idx))
             self.test_idx = get_cityscapes_idx(self.data_path, train=False)
 
         if dataset == 'sun':
@@ -452,6 +503,12 @@ def create_cityscapes_label_colormap():
   colormap[18] = [119, 11, 32]
   return colormap
 
+def create_sick_label_colormap():
+    colormap = np.zeros((256, 3), dtype=np.uint8)
+    colormap[0] = [128, 64, 128]
+    colormap[1] = [244, 35, 232]
+    colormap[2] = [70, 70, 70] 
+    return colormap
 
 def create_pascal_label_colormap():
   """Creates a label colormap used in Pascal segmentation benchmark.
@@ -556,4 +613,3 @@ def color_map(mask, colormap):
     for i in np.unique(mask):
         color_mask[mask == i] = colormap[i]
     return np.uint8(color_mask)
-
